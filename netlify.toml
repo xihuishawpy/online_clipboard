@@ -1,0 +1,22 @@
+[build]
+  command = """
+    pip install -r requirements.txt &&
+    pip install gunicorn &&
+    python build.py
+  """
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  PYTHON_VERSION = "3.9"
+  FLASK_ENV = "production"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 

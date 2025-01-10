@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线剪贴板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            background: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .header img.icon {
+            width: 48px;
+            height: 48px;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 600;
+            background: linear-gradient(120deg, #2196F3, #4A90E2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            resize: vertical;
+            font-size: 16px;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        button {
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .footer {
+            text-align: right;
+            padding: 20px 0;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="header">
+                <img src="/static/images/work-order.png" alt="剪贴板图标" class="icon">
+                <h1>在线剪贴板</h1>
+            </div>
+
+            <textarea placeholder="在此输入内容..."></textarea>
+
+            <div class="options">
+                <div class="option-group">
+                    <label>密码保护：</label>
+                    <input type="password" placeholder="可选">
+                </div>
+
+                <div class="option-group">
+                    <label>过期时间：</label>
+                    <select>
+                        <option value="1h">1小时</option>
+                        <option value="1d">1天</option>
+                        <option value="7d">7天</option>
+                        <option value="30d">30天</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="burn-after-read">
+                <label for="burn-after-read">阅后即焚</label>
+            </div>
+
+            <button onclick="createPaste()">创建链接</button>
+
+            <div class="footer">
+                powerby: 蜡笔小xi
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                console.error('复制失败:', err);
+                return false;
+            }
+        }
+
+        async function createPaste() {
+            const content = document.querySelector('textarea').value;
+            const password = document.querySelector('input[type="password"]').value;
+            const expireTime = document.querySelector('select').value;
+            const burnAfterRead = document.querySelector('#burn-after-read').checked;
+
+            if (!content) {
+                alert('请输入内容！');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/paste', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content,
+                        password,
+                        expireTime,
+                        burnAfterRead
+                    }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    const url = window.location.origin + data.url;
+                    const copied = await copyToClipboard(url);
+                    if (copied) {
+                        alert(`链接已创建并复制到剪贴板：${url}`);
+                    } else {
+                        alert(`链接已创建：${url}\n请手动复制`);
+                    }
+                } else {
+                    alert(data.error || '创建失败，请重试');
+                }
+            } catch (error) {
+                alert('网络错误，请重试');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
