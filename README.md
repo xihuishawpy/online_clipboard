@@ -13,21 +13,25 @@
 
 ## 项目结构
 
-bash
-clipboard/
+```
+online_clipboard/
 ├── docker/
-│ ├── Dockerfile # Docker 构建文件
-│ ├── nginx.conf # Nginx 配置
-│ ├── healthcheck.sh # 健康检查脚本
-│ └── docker-compose.yml # Docker 编排配置
+│   ├── Dockerfile          # Docker 构建文件
+│   ├── nginx.conf          # Nginx 配置
+│   ├── healthcheck.sh      # 健康检查脚本
+│   └── docker-compose.yml  # Docker 编排配置
 ├── src/
-│ ├── static/ # 静态文件
-│ ├── templates/ # HTML 模板
-│ ├── app.py # Flask 应用主文件
-│ ├── config.py # 配置文件
-│ └── requirements.txt # Python 依赖
-├── run_dev.sh # 开发环境启动脚本
-└── README.md # 项目文档
+│   ├── static/             # 静态文件
+│   │   └── images/         # 图片资源
+│   ├── templates/          # HTML 模板
+│   │   ├── index.html     # 主页模板
+│   │   └── view.html      # 查看页模板
+│   ├── app.py             # Flask 应用主文件
+│   ├── config.py          # 配置文件
+│   └── requirements.txt    # Python 依赖
+├── run_dev.sh             # 开发环境启动脚本
+└── README.md              # 项目文档
+```
 
 ## 安装部署
 
@@ -42,7 +46,7 @@ clipboard/
 
 1. 克隆仓库：
 ```bash
-git clone https://github.com/xihuishawpy/online_clipboard
+git clone https://github.com/xihuishawpy/online_clipboard.git
 cd online_clipboard
 ```
 
@@ -91,10 +95,10 @@ docker-compose -f docker/docker-compose.yml ps nginx
 # 查看所有服务日志
 docker-compose -f docker/docker-compose.yml logs -f
 
-# 查看特定服务
-docker-compose -f docker/docker-compose.yml ps web
-docker-compose -f docker/docker-compose.yml ps redis
-docker-compose -f docker/docker-compose.yml ps nginx
+# 查看特定服务日志
+docker-compose -f docker/docker-compose.yml logs web
+docker-compose -f docker/docker-compose.yml logs redis
+docker-compose -f docker/docker-compose.yml logs nginx
 ```
 
 ### 停止服务
